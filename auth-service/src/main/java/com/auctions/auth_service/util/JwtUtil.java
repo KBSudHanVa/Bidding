@@ -90,20 +90,30 @@ public class JwtUtil {
 		}
     }
 
-    public boolean validateToken(String token) {
-
+//    public boolean validateToken(String token) {
+//        try {
+//
+//            Jwts.parser()
+//                    .verifyWith(getKey())
+//                    .build()
+//                    .parseSignedClaims(token);
+//
+//            return true;
+//
+//        } catch (Exception e) {
+//
+//            return false;
+//        }
+//    }
+    
+    public boolean validateAccessToken(String token) {
         try {
-
-            Jwts.parser()
-                    .verifyWith(getKey())
-                    .build()
-                    .parseSignedClaims(token);
-
-            return true;
-
+            Claims claims = extractClaims(token);
+            String type = claims.get("type", String.class);
+            return "accessToken".equals(type);
         } catch (Exception e) {
-
             return false;
         }
     }
+    
 }

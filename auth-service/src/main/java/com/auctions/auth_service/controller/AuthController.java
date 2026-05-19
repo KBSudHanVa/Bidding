@@ -56,4 +56,15 @@ public class AuthController {
                     );
         }
     }
+    
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<?>> getProfile(@RequestHeader("Authorization") String token) {
+        try {
+            ProfileResponse response = authService.getProfile(token);
+            return ResponseEntity.ok(new ApiResponse<>("Profile fetched successfully", response));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(e.getMessage(), null));
+        }
+    }
 }

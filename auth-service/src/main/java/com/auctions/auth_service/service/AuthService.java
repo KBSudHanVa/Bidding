@@ -2,6 +2,7 @@ package com.auctions.auth_service.service;
 
 import com.auctions.auth_service.dto.AuthResponse;
 import com.auctions.auth_service.dto.LoginRequest;
+import com.auctions.auth_service.dto.ProfileResponse;
 import com.auctions.auth_service.dto.RegisterRequest;
 import com.auctions.auth_service.entity.User;
 import com.auctions.auth_service.repository.UserRepository;
@@ -23,7 +24,6 @@ public class AuthService {
     public String register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-
             throw new RuntimeException("Email already exists");
         }
 
@@ -96,5 +96,34 @@ public class AuthService {
                 newAccessToken,
                 newRefreshToken
         );
+    }
+    
+    public ProfileResponse getProfile(String token) {
+
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid token");
+        }
+
+        token = token.substring(7);
+
+        boolean valid = jwtUtil.validateAccessToken(token);
+
+        if (!valid) {
+            throw new RuntimeException("Invalid access token");
+        }
+
+        String email = jwtUtil.extractEmail(token);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return ProfileResponse.builder()
+                .userId(user.getUserId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .usedDeposit(user.getUsedDeposit())
+                .deposit(user.getDeposit())
+                .build();
     }
 }
