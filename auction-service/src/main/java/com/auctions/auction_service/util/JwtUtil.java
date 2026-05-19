@@ -1,4 +1,4 @@
-package com.auctions.api_gateway.util;
+package com.auctions.auction_service.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

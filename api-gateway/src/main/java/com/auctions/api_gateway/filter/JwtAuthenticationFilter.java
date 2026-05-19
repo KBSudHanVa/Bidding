@@ -3,6 +3,8 @@ package com.auctions.api_gateway.filter;
 import com.auctions.api_gateway.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -18,6 +20,9 @@ public class JwtAuthenticationFilter
         implements GlobalFilter, Ordered {
 
     private final JwtUtil jwtUtil;
+    
+    @Value("${jwt.gateway.secret}")
+    private String gatewaySecret;
 
     @Override
     public Mono<Void> filter(
@@ -75,6 +80,8 @@ public class JwtAuthenticationFilter
                 .mutate()
                 .header("X-User-Email", email)
                 .header("X-User-Role", role)
+                .header("X-User-Access-Token", token)
+                .header("X-Internal-Gateway", gatewaySecret)
                 .build();
 
         return chain.filter(

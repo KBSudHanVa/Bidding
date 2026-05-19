@@ -84,7 +84,10 @@ public class JwtUtil {
     	try {
     		Claims claims = extractClaims(token);
     		String type = claims.get("type", String.class);
-    		return "refreshToken".equals(type);
+            Date expiration = claims.getExpiration();
+    		return "refreshToken".equals(type)
+            		&& expiration != null
+                    && expiration.after(new Date());
     	} catch (Exception e) {
 			return false;
 		}
@@ -110,7 +113,10 @@ public class JwtUtil {
         try {
             Claims claims = extractClaims(token);
             String type = claims.get("type", String.class);
-            return "accessToken".equals(type);
+            Date expiration = claims.getExpiration();
+            return "accessToken".equals(type)
+            		&& expiration != null
+                    && expiration.after(new Date());
         } catch (Exception e) {
             return false;
         }

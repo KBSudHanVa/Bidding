@@ -9,9 +9,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.auctions.auction_service.security.HeaderAuthenticationFilter;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+	
+	private final HeaderAuthenticationFilter headerAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -24,9 +29,9 @@ public class SecurityConfig {
         			.authenticated()
                 )
         	.addFilterBefore(
-                        new HeaderAuthenticationFilter(),
-                        UsernamePasswordAuthenticationFilter.class
-                );
+                    headerAuthenticationFilter,
+                    UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }
