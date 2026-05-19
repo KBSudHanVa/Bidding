@@ -1,5 +1,6 @@
 package com.auctions.auth_service.service;
 
+import com.auctions.auth_service.dto.AuthResponse;
 import com.auctions.auth_service.dto.LoginRequest;
 import com.auctions.auth_service.dto.RegisterRequest;
 import com.auctions.auth_service.entity.User;
@@ -40,7 +41,7 @@ public class AuthService {
         return "User registered successfully";
     }
 
-    public String login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -55,9 +56,18 @@ public class AuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        return jwtUtil.generateToken(
+        String accessToken = jwtUtil.generateAccessToken(
                 user.getEmail(),
                 user.getRole()
+        );
+
+        String refreshToken = jwtUtil.generateRefreshToken(
+                user.getEmail()
+        );
+
+        return new AuthResponse(
+                accessToken,
+                refreshToken
         );
     }
 }

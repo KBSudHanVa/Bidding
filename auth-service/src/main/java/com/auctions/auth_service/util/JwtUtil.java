@@ -14,21 +14,49 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
-    private long expiration;
+    @Value("${jwt.accessTokenExpiration}")
+    private long accessTokenExpiration;
+    
+    @Value("${jwt.refreshTokenExpiration}")
+    private long refreshTokenExpiration;
 
     private SecretKey getKey() {
 
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String email, String role) {
+//    public String generateToken(String email, String role) {
+//
+//        return Jwts.builder()
+//                .subject(email)
+//                .claim("role", role)
+//                .issuedAt(new Date())
+//                .expiration(new Date(System.currentTimeMillis() + expiration))
+//                .signWith(getKey())
+//                .compact();
+//    }
+    
+    public String generateAccessToken(String email, String role) {
 
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .issuer("auth-service")
+                .claim("type", "accessToken")
+                .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
+                .signWith(getKey())
+                .compact();
+    }
+
+    public String generateRefreshToken(String email) {
+
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(new Date())
+                .issuer("auth-service")
+                .claim("type", "refreshToken")
+                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
                 .signWith(getKey())
                 .compact();
     }
