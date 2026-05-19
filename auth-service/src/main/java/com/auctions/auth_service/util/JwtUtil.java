@@ -62,13 +62,32 @@ public class JwtUtil {
     }
 
     public String extractEmail(String token) {
+    	return extractClaims(token).getSubject();
+//        return Jwts.parser()
+//                .verifyWith(getKey())
+//                .build()
+//                .parseSignedClaims(token)
+//                .getPayload()
+//                .getSubject();
+    }
+    
+    public Claims extractClaims(String token) {
 
         return Jwts.parser()
                 .verifyWith(getKey())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getPayload();
+    }
+    
+    public boolean validateRefreshToken(String token) {
+    	try {
+    		Claims claims = extractClaims(token);
+    		String type = claims.get("type", String.class);
+    		return "refreshToken".equals(type);
+    	} catch (Exception e) {
+			return false;
+		}
     }
 
     public boolean validateToken(String token) {

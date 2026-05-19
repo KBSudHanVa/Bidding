@@ -52,7 +52,6 @@ public class AuthService {
         );
 
         if (!matches) {
-
             throw new RuntimeException("Invalid password");
         }
 
@@ -68,6 +67,34 @@ public class AuthService {
         return new AuthResponse(
                 accessToken,
                 refreshToken
+        );
+    }
+    
+    public AuthResponse refreshToken(String refreshToken) {
+
+        boolean valid = jwtUtil.validateRefreshToken(refreshToken);
+
+        if (!valid) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        String email = jwtUtil.extractEmail(refreshToken);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String newAccessToken = jwtUtil.generateAccessToken(
+                user.getEmail(),
+                user.getRole()
+        );
+
+        String newRefreshToken = jwtUtil.generateRefreshToken(
+                user.getEmail()
+        );
+
+        return new AuthResponse(
+                newAccessToken,
+                newRefreshToken
         );
     }
 }

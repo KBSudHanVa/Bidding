@@ -15,58 +15,44 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<?>> register(
-            @RequestBody RegisterRequest request
-    ) {
-
+    public ResponseEntity<ApiResponse<?>> register(@RequestBody RegisterRequest request) {
         try {
-
             String response = authService.register(request);
-
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(
-                            new ApiResponse<>(
-                                    response,
-                                    null
-                            )
+                    .body(new ApiResponse<>(response,null)
                     );
-
         } catch (Exception e) {
-
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(
-                            new ApiResponse<>(
-                                    e.getMessage(),
-                                    null
-                            )
+                    .body(new ApiResponse<>(e.getMessage(), null)
                     );
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<?>> login(
-            @RequestBody LoginRequest request
-    ) {
+    public ResponseEntity<ApiResponse<?>> login(@RequestBody LoginRequest request) {
+        try {
+            AuthResponse response = authService.login(request);
+            return ResponseEntity.ok(
+                    new ApiResponse<>("Login successful", response )
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(e.getMessage(), null)
+                    );
+        }
+    }
+    
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<?>> refreshToken(@RequestBody RefreshTokenRequest request) {
 
         try {
-
-            AuthResponse response = authService.login(request);
-
+            AuthResponse response = authService.refreshToken(request.getRefreshToken());
             return ResponseEntity.ok(
-                    new ApiResponse<>(
-                            "Login successful",
-                            response
-                    )
+                    new ApiResponse<>("Token refreshed successfully",response)
             );
-
         } catch (Exception e) {
-
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(
-                            new ApiResponse<>(
-                                    e.getMessage(),
-                                    null
-                            )
+                    .body(new ApiResponse<>(e.getMessage(), null)
                     );
         }
     }
