@@ -20,18 +20,34 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     private final JwtUtil jwtUtil;
+    
+    private enum Role {
+		BUYER,
+		SELLER,
+		BUYER_SELLER
+	}
 
     public String register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
+        
+        boolean validRole = java.util.Arrays.stream(Role.values())
+				.anyMatch(role -> role.toString().equalsIgnoreCase(request.getRole()));
+        
+        if (!validRole) {
+        	throw new RuntimeException(
+        	        "Invalid role. Please select one of the following: " +
+        	        java.util.Arrays.toString(Role.values())
+        	    );
+		}
 
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(Role.valueOf(request.getRole().toUpperCase()).toString())	
                 .deposit(0.0)
                 .usedDeposit(0.0)
                 .build();
