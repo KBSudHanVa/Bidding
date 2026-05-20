@@ -80,4 +80,28 @@ public class AuthController {
 			return ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage(), null));
 		}
     }
+    
+    
+    @PostMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<?>> getUsersList(
+
+            @RequestParam(defaultValue = "1")
+            Integer page,
+
+            @RequestParam(defaultValue = "10")
+            Integer size,
+
+            @RequestBody UserFilterRequest request) {
+
+        try {
+            PaginationResponse<UserResponse> response = authService.getUsersList(request, page, size);
+            return ResponseEntity.ok(new ApiResponse<>("Users fetched successfully", response));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(e.getMessage(), null));
+        }
+    }
 }

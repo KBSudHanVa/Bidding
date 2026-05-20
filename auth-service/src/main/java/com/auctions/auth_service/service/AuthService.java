@@ -1,16 +1,26 @@
 package com.auctions.auth_service.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.auctions.auth_service.dto.AuthResponse;
 import com.auctions.auth_service.dto.LoginRequest;
+import com.auctions.auth_service.dto.PaginationResponse;
 import com.auctions.auth_service.dto.ProfileResponse;
 import com.auctions.auth_service.dto.RegisterRequest;
 import com.auctions.auth_service.dto.UpdateUserStatus;
+import com.auctions.auth_service.dto.UserFilterRequest;
+import com.auctions.auth_service.dto.UserResponse;
 import com.auctions.auth_service.entity.User;
 import com.auctions.auth_service.repository.UserRepository;
+import com.auctions.auth_service.specification.UserSpecification;
 import com.auctions.auth_service.util.JwtUtil;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -158,5 +168,41 @@ public class AuthService {
     	userRepository.save(user);
     	
     	return "User status updated successfully";
+    }
+    
+    public PaginationResponse<UserResponse> getUsersList(UserFilterRequest request, Integer page, Integer size) {
+
+        Pageable pageable = PageRequest.of(
+        		(page == null || page < 1) ? 0 : page - 1,
+        		(size == null || size < 1) ? 10 : size,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        Page<User> users = userRepository.findAll(
+                UserSpecification.filterUsers(request),
+                pageable
+        );
+
+        Page<UserResponse> responsePage =
+                users.map(user -> UserResponse.builder()
+                        .userId(user.getUserId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .role(user.getRole())
+                        .usedDeposit(user.getUsedDeposit())
+                        .deposit(user.getDeposit())
+                        .createdAt(user.getCreatedAt())
+                        .isActive(user.isActive())
+                        .build()
+                );
+
+        return PaginationResponse.<UserResponse>builder()
+                .content(responsePage.getContent())
+                .page(responsePage.getNumber()+1)
+                .size(responsePage.getSize())
+                .totalElements(responsePage.getTotalElements())
+                .totalPages(responsePage.getTotalPages())
+                .last(responsePage.isLast())
+                .build();
     }
 }
