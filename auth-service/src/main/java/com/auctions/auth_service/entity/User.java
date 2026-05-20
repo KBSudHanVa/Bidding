@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -36,8 +38,12 @@ public class User {
     @Column(name = "deposit")
     private Double deposit;
 
-    @Column(name = "created_at")
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+    
+    @Column(name = "is_active")
+    private boolean isActive;
     
     @PrePersist
     public void generateId() {
