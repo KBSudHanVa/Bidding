@@ -5,6 +5,7 @@ import com.auctions.auth_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -66,5 +67,17 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ApiResponse<>(e.getMessage(), null));
         }
+    }
+    
+    @PatchMapping("/{userId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<?>> updateUserStatus(@PathVariable String userId, @RequestBody UpdateUserStatus request){
+    	try {
+    		request.setUserId(userId);
+			String response = authService.updateUserStatus(request);
+			return ResponseEntity.ok(new ApiResponse<>(response, null));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage(), null));
+		}
     }
 }

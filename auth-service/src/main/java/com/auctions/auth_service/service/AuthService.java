@@ -4,6 +4,7 @@ import com.auctions.auth_service.dto.AuthResponse;
 import com.auctions.auth_service.dto.LoginRequest;
 import com.auctions.auth_service.dto.ProfileResponse;
 import com.auctions.auth_service.dto.RegisterRequest;
+import com.auctions.auth_service.dto.UpdateUserStatus;
 import com.auctions.auth_service.entity.User;
 import com.auctions.auth_service.repository.UserRepository;
 import com.auctions.auth_service.util.JwtUtil;
@@ -62,6 +63,10 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if(user.isActive() == false) {
+        	throw new RuntimeException("User is in-active, Please contact to support.");
+        }
+        
         boolean matches = passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword()
@@ -141,5 +146,17 @@ public class AuthService {
                 .usedDeposit(user.getUsedDeposit())
                 .deposit(user.getDeposit())
                 .build();
+    }
+    
+    public String updateUserStatus(UpdateUserStatus request) {
+    	User user = userRepository
+    					.findByUserId(request.getUserId())
+    					.orElseThrow(() -> new RuntimeException("User not found..")
+    							);
+    	
+    	user.setActive(request.getIsActive());
+    	userRepository.save(user);
+    	
+    	return "User status updated successfully";
     }
 }
