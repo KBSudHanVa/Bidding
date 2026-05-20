@@ -1,5 +1,7 @@
 package com.auctions.auth_service.config;
 
+import com.auctions.auth_service.security.JwtAccessDeniedHandler;
+import com.auctions.auth_service.security.JwtAuthenticationEntryPoint;
 import com.auctions.auth_service.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+	private final JwtAccessDeniedHandler accessDeniedHandler;
 
 	@Bean
     public PasswordEncoder passwordEncoder() {
@@ -30,6 +34,10 @@ public class SecurityConfig {
         http
         	.csrf(csrf -> csrf.disable())
         	.sessionManagement( session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        	.exceptionHandling(ex -> ex
+        	        .authenticationEntryPoint(authenticationEntryPoint)
+        	        .accessDeniedHandler(accessDeniedHandler)
+        	)
         	.authorizeHttpRequests(auth -> auth
         			.requestMatchers(
                                 "/auth/register",

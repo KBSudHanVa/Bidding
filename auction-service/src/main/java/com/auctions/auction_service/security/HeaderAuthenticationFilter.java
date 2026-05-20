@@ -39,8 +39,8 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
         String token = request.getHeader("X-User-Access-Token");
         String gatewayHeader =request.getHeader("X-Internal-Gateway");
         
-        System.out.println("gatewayHeader: " + gatewayHeader);
-        System.out.println("stored gatewaySecret: " + gatewaySecret);
+//        System.out.println("gatewayHeader: " + gatewayHeader);
+//        System.out.println("stored gatewaySecret: " + gatewaySecret);
         
         if (gatewayHeader == null || !gatewayHeader.equals(gatewaySecret)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
