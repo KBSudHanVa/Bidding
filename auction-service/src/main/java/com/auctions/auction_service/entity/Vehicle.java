@@ -53,7 +53,7 @@ public class Vehicle {
     @Column(name = "winning_bid_amount")
     private Double winningBidAmount;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private VehicleStatus status;
 
