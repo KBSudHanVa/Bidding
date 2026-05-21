@@ -19,6 +19,7 @@ import com.auctions.auth_service.entity.User;
 import com.auctions.auth_service.repository.UserRepository;
 import com.auctions.auth_service.specification.UserSpecification;
 import com.auctions.auth_service.util.JwtUtil;
+import com.auctions.auth_service.dto.ResetPasswordRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -204,5 +205,21 @@ public class AuthService {
                 .totalPages(responsePage.getTotalPages())
                 .last(responsePage.isLast())
                 .build();
+    }
+    public String resetPassword(ResetPasswordRequest request) {
+
+        User user = userRepository
+                .findByUserId(request.getUserId())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found")
+                );
+
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword())
+        );
+
+        userRepository.save(user);
+
+        return "Password reset successfully";
     }
 }

@@ -104,4 +104,27 @@ public class AuthController {
                     .body(new ApiResponse<>(e.getMessage(), null));
         }
     }
+    
+    @PatchMapping("/{userId}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<?>> resetPassword(
+            @PathVariable String userId,
+            @RequestBody ResetPasswordRequest request) {
+
+        try {
+
+            request.setUserId(userId);
+
+            String response = authService.resetPassword(request);
+
+            return ResponseEntity.ok(
+                    new ApiResponse<>(response, null)
+            );
+
+        } catch (Exception e) {
+
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(e.getMessage(), null));
+        }
+    }
 }
