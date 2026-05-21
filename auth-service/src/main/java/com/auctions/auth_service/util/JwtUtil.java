@@ -36,10 +36,12 @@ public class JwtUtil {
 //                .compact();
 //    }
     
-    public String generateAccessToken(String email, String role) {
+    public String generateAccessToken(String email, String role, String userId) {
 
         return Jwts.builder()
-                .subject(email)
+        		.subject(userId)
+//                .subject(email)
+                .claim("email", email)
                 .claim("role", role)
                 .issuedAt(new Date())
                 .issuer("auth-service")
@@ -49,10 +51,11 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generateRefreshToken(String email) {
+    public String generateRefreshToken(String userId, String email) {
 
         return Jwts.builder()
-                .subject(email)
+                .subject(userId)
+                .claim("email", email)
                 .issuedAt(new Date())
                 .issuer("auth-service")
                 .claim("type", "refreshToken")
@@ -62,7 +65,8 @@ public class JwtUtil {
     }
 
     public String extractEmail(String token) {
-    	return extractClaims(token).getSubject();
+    	return extractClaims(token).get("email").toString();
+//    			getSubject();
 //        return Jwts.parser()
 //                .verifyWith(getKey())
 //                .build()

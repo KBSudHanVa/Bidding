@@ -89,11 +89,13 @@ public class AuthService {
 
         String accessToken = jwtUtil.generateAccessToken(
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getUserId()
         );
 
         String refreshToken = jwtUtil.generateRefreshToken(
-                user.getEmail()
+        		user.getUserId(),
+        		user.getEmail()
         );
 
         return new AuthResponse(
@@ -117,10 +119,12 @@ public class AuthService {
 
         String newAccessToken = jwtUtil.generateAccessToken(
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getUserId()
         );
 
         String newRefreshToken = jwtUtil.generateRefreshToken(
+        		user.getUserId(),
                 user.getEmail()
         );
 

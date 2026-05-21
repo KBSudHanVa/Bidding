@@ -71,13 +71,16 @@ public class JwtAuthenticationFilter
 
         Claims claims = jwtUtil.extractClaims(token);
 
-        String email = claims.getSubject();
+        String userId = claims.getSubject();
+        
+        String email = claims.get("email", String.class);
 
         String role = claims.get("role", String.class);
 
         ServerHttpRequest request = exchange
                 .getRequest()
                 .mutate()
+                .header("X-User-Id", userId)
                 .header("X-User-Email", email)
                 .header("X-User-Role", role)
                 .header("X-User-Access-Token", token)
