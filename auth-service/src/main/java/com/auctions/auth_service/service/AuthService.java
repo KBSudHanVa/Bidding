@@ -214,12 +214,8 @@ public class AuthService {
                         new RuntimeException("User not found")
                 );
 
-        user.setPassword(
-                passwordEncoder.encode(request.getNewPassword())
-        );
-
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-
-        return "Password reset successfully";
+        return "Force password reset successfully";
     }
 }
