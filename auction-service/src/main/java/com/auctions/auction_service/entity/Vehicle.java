@@ -36,6 +36,9 @@ public class Vehicle {
 
     @Column(name = "added_by")
     private String addedBy;
+    
+    @Column(name = "client_id")
+    private String clientId;
 
     @Column(name = "target_selling_price")
     private Double targetSellingPrice;
