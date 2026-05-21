@@ -69,4 +69,7 @@ public class Vehicle {
     
     @Column(name = "current_bid_amount")
     private Double currentBidAmount;
+    
+    @Column(name = "current_highest_bidder")
+    private String currentHighestBidder;
 }
