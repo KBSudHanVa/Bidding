@@ -4,8 +4,12 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.auctions.auction_service.enums.VehicleStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,9 +40,6 @@ public class Vehicle {
 
     @Column(name = "added_by")
     private String addedBy;
-    
-    @Column(name = "client_id")
-    private String clientId;
 
     @Column(name = "target_selling_price")
     private Double targetSellingPrice;
@@ -52,7 +53,9 @@ public class Vehicle {
     @Column(name = "winning_bid_amount")
     private Double winningBidAmount;
 
-    private String status;
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "status")
+    private VehicleStatus status;
 
     @Column(name = "bid_close_date")
     private LocalDateTime bidCloseDate;
@@ -60,4 +63,10 @@ public class Vehicle {
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "client_id")
+    private String clientId;
+    
+    @Column(name = "current_bid_amount")
+    private Double currentBidAmount;
 }
