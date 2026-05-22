@@ -4,7 +4,7 @@ public enum VehicleStatus {
     DRAFT,
     OPEN,
     LIVE,
+    CLOSED,
     SOLD,
-    CANCELLED,
-    CLOSED
+    CANCELLED
 }
