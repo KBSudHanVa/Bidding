@@ -33,12 +33,24 @@ public class JwtAuthenticationFilter
         String path = exchange.getRequest()
                 .getURI()
                 .getPath();
+        
+        String method = exchange.getRequest()
+                .getMethod()
+                .name();
 
         // PUBLIC APIs
         if (
                 path.contains("/auth/login") ||
                 path.contains("/auth/register") ||
-                path.contains("/auth/refresh")
+                path.contains("/auth/refresh") ||
+                
+                (
+                        method.equals("GET") &&
+                        (
+                            path.equals("/auction/vehicle") ||
+                            path.startsWith("/auction/vehicle/")
+                        )
+                    )
         ) {
 
             return chain.filter(exchange);

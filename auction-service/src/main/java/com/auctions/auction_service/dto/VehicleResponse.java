@@ -1,8 +1,13 @@
 package com.auctions.auction_service.dto;
 
-import lombok.*;
-
 import java.time.LocalDateTime;
+
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
@@ -18,11 +23,27 @@ public class VehicleResponse {
 
     private Double targetSellingPrice;
 
+    private Double minSellingPrice;
+
     private Double currentBidAmount;
+
+    private String currentHighestBidderName;
+
+    private String currentHighestBidderEmail;
+
+    private String sellerName;
+
+    private String sellerEmail;
+
+    private String winnerName;
+
+    private String winnerEmail;
     
-    private String currentHighestBidder;
+    private Double winningBidAmount;
 
     private String status;
 
     private LocalDateTime bidCloseDate;
+
+    private LocalDateTime createdAt;
 }

@@ -31,8 +31,10 @@ public class SecurityConfig {
         			.authenticationEntryPoint(authenticationEntryPoint)
         			.accessDeniedHandler(accessDeniedHandler))
         	.authorizeHttpRequests(auth -> auth
+        			.requestMatchers(
+                            "/auction/vehicle"
+    					).permitAll()
         			.anyRequest()
-//        			.permitAll()
         			.authenticated()
                 )
         	.addFilterBefore(

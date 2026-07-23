@@ -33,11 +33,20 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+    	
+    	String path = request.getRequestURI();
+        String method = request.getMethod();
 
+        String userId = request.getHeader("X-User-Id");
         String email = request.getHeader("X-User-Email");
         String role = request.getHeader("X-User-Role");
         String token = request.getHeader("X-User-Access-Token");
         String gatewayHeader =request.getHeader("X-Internal-Gateway");
+        
+        if (method.equalsIgnoreCase("GET") && (path.equals("/auction/vehicle") || path.startsWith("/auction/vehicle/"))) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         
 //        System.out.println("gatewayHeader: " + gatewayHeader);
 //        System.out.println("stored gatewaySecret: " + gatewaySecret);
