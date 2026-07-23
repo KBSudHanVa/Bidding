@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -75,113 +76,262 @@ public class VehicleService {
 
 		vehicle = vehicleRepository.save(vehicle);
 
-		return mapToVehicleResponse(vehicle, loggedInUser);
+		return mapToVehicleResponse(vehicle);
 	}
-
-	// =====================================================
-	// VEHICLE LIST
-	// =====================================================
-
+	
+	
+//	new vehicle list
 	@Transactional
-	public PaginationResponse<VehicleResponse> getVehiclesList(VehicleFilterRequest request, Integer page, Integer size, String userId) {
+	public PaginationResponse<VehicleResponse> getVehiclesListNew(
+	        VehicleFilterRequest request,
+	        Integer page,
+	        Integer size,
+	        String userId) {
 
-//		System.out.println("-------*->"+userId+"<--------");
-		
-		User loggedInUser = userRepository.findById(userId)
-				.orElse(null);
+	    User loggedInUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+	    Pageable pageable = PageRequest.of((page == null || page < 1) ? 0 : page - 1, (size == null || size < 1) ? 10 : size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+	    Page<Vehicle> vehicles;
+
+	    switch (loggedInUser.getRole().toUpperCase()) {
+
+	        case "ADMIN":
+	            vehicles = vehicleRepository.findAll(
+	                    VehicleSpecification.filterVehicles(request),
+	                    pageable);
+	            break;
+
+	        case "SELLER":
+	            vehicles = vehicleRepository.findAll(
+	                    filterVehiclesForSeller(
+	                            request,
+	                            loggedInUser.getUserId()),
+	                    pageable);
+	            break;
+
+	        case "BUYER":
+	            vehicles = vehicleRepository.findAll(
+	                    filterVehiclesForBuyer(
+	                            request,
+	                            loggedInUser.getUserId()),
+	                    pageable);
+	            break;
+
+	        case "BUYER_SELLER":
+	            vehicles = vehicleRepository.findAll(
+	                    filterVehiclesForBuyerSeller(
+	                            request,
+	                            loggedInUser.getUserId()),
+	                    pageable);
+	            break;
+
+	        default:
+	            throw new RuntimeException("Access denied");
+	    }
+
+	    Page<VehicleResponse> response =
+	            vehicles.map(v -> mapToVehicleResponse(v));
+
+	    return PaginationResponse.<VehicleResponse>builder()
+	            .content(response.getContent())
+	            .page(response.getNumber() + 1)
+	            .size(response.getSize())
+	            .totalElements(response.getTotalElements())
+	            .last(response.isLast())
+	            .build();
+	}
+	
+	public static Specification<Vehicle> filterVehiclesForSeller(
+	        VehicleFilterRequest request,
+	        String userId) {
+
+	    return VehicleSpecification.filterVehicles(request)
+	            .and((root, query, cb) ->
+	                    cb.equal(root.get("clientId").get("userId"), userId));
+	}
+	
+	public static Specification<Vehicle> filterVehiclesForBuyer(
+	        VehicleFilterRequest request,
+	        String userId) {
+
+	    return VehicleSpecification.filterVehicles(request)
+	            .and((root, query, cb) ->
+	                    cb.equal(root.get("wonBy").get("userId"), userId));
+	}
+	
+	public static Specification<Vehicle> filterVehiclesForBuyerSeller(
+	        VehicleFilterRequest request,
+	        String userId) {
+
+	    return VehicleSpecification.filterVehicles(request)
+	            .and((root, query, cb) ->
+	                    cb.or(
+	                        cb.equal(root.get("clientId").get("userId"), userId),
+	                        cb.equal(root.get("wonBy").get("userId"), userId)
+	                    ));
+	}
+	
+	private VehicleResponse mapToVehicleResponse(Vehicle vehicle) {
+	    return VehicleResponse.builder()
+	            .lotNo(vehicle.getLotNo())
+	            .title(vehicle.getTitle())
+	            .description(vehicle.getDescription())
+	            .targetSellingPrice(vehicle.getTargetSellingPrice())
+	            .minSellingPrice(vehicle.getMinSellingPrice())
+	            .currentBidAmount(vehicle.getCurrentBidAmount())
+	            .winningBidAmount(vehicle.getWinningBidAmount())
+	            .sellerName(vehicle.getClientId() != null ? vehicle.getClientId().getName() : null)
+	            .sellerEmail(vehicle.getClientId() != null ? vehicle.getClientId().getEmail() : null)
+	            .winnerName(vehicle.getWonBy() != null ? vehicle.getWonBy().getName() : null)
+	            .winnerEmail(vehicle.getWonBy() != null ? vehicle.getWonBy().getEmail() : null)
+	            .status(vehicle.getStatus() != null ? vehicle.getStatus().name() : null)
+	            .bidCloseDate(vehicle.getBidCloseDate() != null ? vehicle.getBidCloseDate() : null)
+	            .createdAt(vehicle.getCreatedAt() != null ? vehicle.getCreatedAt() : null)
+	            .build();
+	}
+	
+
+//	// =====================================================
+//	// VEHICLE LIST
+//	// =====================================================
+//
+//	@Transactional
+//	public PaginationResponse<VehicleResponse> getVehiclesList(VehicleFilterRequest request, Integer page, Integer size, String userId) {
+//
+////		System.out.println("-------*->"+userId+"<--------");
+//		
+////		User loggedInUser = userRepository.findById(userId)
+////				.orElse(null);
+//		
+////		System.out.println("Logged User: " + loggedInUser.getUserId());
+////		System.out.println("Role: " + loggedInUser.getRole());
+//		
+//		User loggedInUser = userRepository.findById(userId)
+////				.orElse(null)
 //				.orElseThrow(() -> new RuntimeException("User not found"));
-		
-//		if(loggedInUser.getUserId() == null) {
-//			System.out.println("79----null");
-//		} else {
-//			System.out.println("81---:"+loggedInUser.getUserId());
+//		
+////		if(loggedInUser.getUserId() == null) {
+////			System.out.println("79----null");
+////		} else {
+////			System.out.println("81---:"+loggedInUser.getUserId());
+////		}
+//
+//		Pageable pageable = PageRequest.of((page == null || page < 1) ? 0 : page - 1,
+//				(size == null || size < 1) ? 10 : size, Sort.by(Sort.Direction.DESC, "createdAt"));
+//
+//		Page<Vehicle> vehicles = vehicleRepository.findAll(VehicleSpecification.filterVehicles(request), pageable);
+//
+//		Page<VehicleResponse> responsePage = vehicles.map(vehicle -> mapToVehicleResponse(vehicle, loggedInUser));
+//
+//		return PaginationResponse.<VehicleResponse>builder().content(responsePage.getContent())
+//				.page(responsePage.getNumber() + 1).size(responsePage.getSize())
+//				.totalElements(responsePage.getTotalElements()).last(responsePage.isLast()).build();
+//	}
+//
+//	// =====================================================
+//	// COMMON RESPONSE MAPPER
+//	// =====================================================
+//
+//	private VehicleResponse mapToVehicleResponse(Vehicle vehicle, User loggedInUser) {
+//		
+////		if(loggedInUser.getUserId().equalsIgnoreCase("notFound")) {
+////			System.out.println("104----empty");
+////		}
+//		
+////		System.out.println("-------->"+loggedInUser.getUserId()+"<--------");
+//
+//		VehicleResponse.VehicleResponseBuilder builder = VehicleResponse.builder()
+//				.lotNo(vehicle.getLotNo())
+//				.title(vehicle.getTitle())
+//				.description(vehicle.getDescription())
+//				.targetSellingPrice(vehicle.getTargetSellingPrice())
+//				.status(vehicle.getStatus() != null ? vehicle.getStatus().name() : null)
+//				.bidCloseDate(vehicle.getBidCloseDate())
+//				.createdAt(vehicle.getCreatedAt());
+//		
+//		// =================================================
+//		// ANONYMOUS
+//		// =================================================
+////		if (loggedInUser == null || loggedInUser.getRole().equalsIgnoreCase("ANONYMOUS")) {
+////			builder.currentBidAmount(vehicle.getCurrentBidAmount());
+////			return builder.build();
+////		}
+//
+//		// =================================================
+//		// ADMIN
+//		// =================================================
+//
+//		if (loggedInUser.getRole().equalsIgnoreCase("ADMIN")) {
+//
+//			builder.minSellingPrice(vehicle.getMinSellingPrice())
+//					.currentBidAmount(vehicle.getCurrentBidAmount())
+//					.winningBidAmount(vehicle.getWinningBidAmount())
+//					.sellerName(vehicle.getClientId() != null ? vehicle.getClientId().getName() : null)
+//					.sellerEmail(vehicle.getClientId() != null ? vehicle.getClientId().getEmail() : null)
+//					.winnerName(vehicle.getWonBy() != null ? vehicle.getWonBy().getName() : null)
+//					.winnerEmail(vehicle.getWonBy() != null ? vehicle.getWonBy().getEmail() : null)
+//					.currentHighestBidderName(vehicle.getCurrentHighestBidder() != null ? vehicle.getCurrentHighestBidder().getName() : null)
+//					.currentHighestBidderEmail(vehicle.getCurrentHighestBidder() != null ? vehicle.getCurrentHighestBidder().getEmail() : null);
 //		}
-
-		Pageable pageable = PageRequest.of((page == null || page < 1) ? 0 : page - 1,
-				(size == null || size < 1) ? 10 : size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-		Page<Vehicle> vehicles = vehicleRepository.findAll(VehicleSpecification.filterVehicles(request), pageable);
-
-		Page<VehicleResponse> responsePage = vehicles.map(vehicle -> mapToVehicleResponse(vehicle, loggedInUser));
-
-		return PaginationResponse.<VehicleResponse>builder().content(responsePage.getContent())
-				.page(responsePage.getNumber() + 1).size(responsePage.getSize())
-				.totalElements(responsePage.getTotalElements()).last(responsePage.isLast()).build();
-	}
-
-	// =====================================================
-	// COMMON RESPONSE MAPPER
-	// =====================================================
-
-	private VehicleResponse mapToVehicleResponse(Vehicle vehicle, User loggedInUser) {
-		
-//		if(loggedInUser.getUserId().equalsIgnoreCase("notFound")) {
-//			System.out.println("104----empty");
+//
+//		// =================================================
+//		// BUYER_SELLER
+//		// =================================================
+//
+//		else if (loggedInUser.getRole().equalsIgnoreCase("BUYER_SELLER")) {
+//		    // Seller logic
+//		    if (vehicle.getClientId() != null &&
+//		        vehicle.getClientId().getUserId().equals(loggedInUser.getUserId())) {
+//
+//		        builder.minSellingPrice(vehicle.getMinSellingPrice())
+//		               .sellerName(vehicle.getClientId().getName())
+//		               .sellerEmail(vehicle.getClientId().getEmail());
+//		    }
+//
+//		    // Buyer logic
+//		    builder.currentBidAmount(vehicle.getCurrentBidAmount());
+//
+//		    if (vehicle.getWonBy() != null &&
+//		        vehicle.getWonBy().getUserId().equals(loggedInUser.getUserId())) {
+//
+//		        builder.winningBidAmount(vehicle.getWinningBidAmount())
+//		               .winnerName(vehicle.getWonBy().getName())
+//		               .winnerEmail(vehicle.getWonBy().getEmail());
+//		    }
 //		}
-		
-//		System.out.println("-------->"+loggedInUser.getUserId()+"<--------");
-
-		VehicleResponse.VehicleResponseBuilder builder = VehicleResponse.builder()
-				.lotNo(vehicle.getLotNo())
-				.title(vehicle.getTitle())
-				.description(vehicle.getDescription())
-				.targetSellingPrice(vehicle.getTargetSellingPrice())
-				.status(vehicle.getStatus() != null ? vehicle.getStatus().name() : null)
-				.bidCloseDate(vehicle.getBidCloseDate())
-				.createdAt(vehicle.getCreatedAt());
-
-		// =================================================
-		// ADMIN
-		// =================================================
-
-		if (loggedInUser.getRole().equalsIgnoreCase("ADMIN")) {
-
-			builder.minSellingPrice(vehicle.getMinSellingPrice())
-					.currentBidAmount(vehicle.getCurrentBidAmount())
-					.winningBidAmount(vehicle.getWinningBidAmount())
-					.sellerName(vehicle.getClientId() != null ? vehicle.getClientId().getName() : null)
-					.sellerEmail(vehicle.getClientId() != null ? vehicle.getClientId().getEmail() : null)
-					.winnerName(vehicle.getWonBy() != null ? vehicle.getWonBy().getName() : null)
-					.winnerEmail(vehicle.getWonBy() != null ? vehicle.getWonBy().getEmail() : null)
-					.currentHighestBidderName(vehicle.getCurrentHighestBidder() != null ? vehicle.getCurrentHighestBidder().getName() : null)
-					.currentHighestBidderEmail(vehicle.getCurrentHighestBidder() != null ? vehicle.getCurrentHighestBidder().getEmail() : null);
-		}
-
-		// =================================================
-		// SELLER
-		// =================================================
-
-		else if (loggedInUser.getRole().equalsIgnoreCase("SELLER")) {
-
-			if (vehicle.getClientId() != null && vehicle.getClientId().getUserId().equals(loggedInUser.getUserId())) {
-				builder.minSellingPrice(vehicle.getMinSellingPrice())
-						.winningBidAmount(vehicle.getWinningBidAmount())
-						.sellerName(vehicle.getClientId().getName())
-						.sellerEmail(vehicle.getClientId().getEmail());
-			}
-		}
-
-		// =================================================
-		// BUYER
-		// =================================================
-
-		else if (loggedInUser.getRole().equalsIgnoreCase("BUYER")) {
-			builder.currentBidAmount(vehicle.getCurrentBidAmount());
-			if (vehicle.getWonBy() != null && vehicle.getWonBy().getUserId().equals(loggedInUser.getUserId())) {
-				builder.winningBidAmount(vehicle.getWinningBidAmount())
-						.winnerName(vehicle.getWonBy().getName())
-						.winnerEmail(vehicle.getWonBy().getEmail());
-			}
-		}
-
-		// =================================================
-		// ANONYMOUS
-		// =================================================
-
-		else {
-			builder.currentBidAmount(vehicle.getCurrentBidAmount());
-		}
-
-		return builder.build();
-	}
+//		
+//		// =================================================
+//		// SELLER
+//		// =================================================
+//
+//		else if (loggedInUser.getRole().equalsIgnoreCase("SELLER")) {
+//
+//			if (vehicle.getClientId() != null && vehicle.getClientId().getUserId().equals(loggedInUser.getUserId())) {
+//				builder.minSellingPrice(vehicle.getMinSellingPrice())
+//						.winningBidAmount(vehicle.getWinningBidAmount())
+//						.sellerName(vehicle.getClientId().getName())
+//						.sellerEmail(vehicle.getClientId().getEmail());
+//			}
+//		}
+//
+//		// =================================================
+//		// BUYER
+//		// =================================================
+//
+//		else if (loggedInUser.getRole().equalsIgnoreCase("BUYER")) {
+//			builder.currentBidAmount(vehicle.getCurrentBidAmount());
+//			if (vehicle.getWonBy() != null && vehicle.getWonBy().getUserId().equals(loggedInUser.getUserId())) {
+//				builder.winningBidAmount(vehicle.getWinningBidAmount())
+//						.winnerName(vehicle.getWonBy().getName())
+//						.winnerEmail(vehicle.getWonBy().getEmail());
+//			}
+//		}
+//
+////		else {
+////			builder.currentBidAmount(vehicle.getCurrentBidAmount());
+////		}
+//
+//		return builder.build();
+//	}
 }

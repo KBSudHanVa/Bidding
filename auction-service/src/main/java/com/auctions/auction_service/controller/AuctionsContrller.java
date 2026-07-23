@@ -1,5 +1,7 @@
 package com.auctions.auction_service.controller;
 
+import java.util.Objects;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,40 +52,38 @@ public class AuctionsContrller {
         return ResponseEntity.ok(new ApiResponse<>("Vehicle created successfully", response));
     }
 	
-	@GetMapping("/vehicle")
-    public ResponseEntity<ApiResponse<?>> getVehicle(
-            @RequestBody(required = false) VehicleFilterRequest request,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size
-            , @RequestHeader (value = "X-User-Id", required = false) String userId 
-            ) {
-		
-        if (request == null) {
-            request = new VehicleFilterRequest();
-        }
-        
-        if (userId == null) {
-        	userId = "notNUll";
-        }
-
-        PaginationResponse<VehicleResponse> response = vehicleService.getVehiclesList(request, page, size, userId);
-
-        return ResponseEntity.ok(new ApiResponse<>("Vehicles fetched successfully", response));
-    }
+//	@GetMapping("/vehicle")
+//    public ResponseEntity<ApiResponse<?>> getVehicle(
+//            @RequestBody(required = false) VehicleFilterRequest request,
+//            @RequestParam(defaultValue = "1") Integer page,
+//            @RequestParam(defaultValue = "10") Integer size,
+//            @RequestHeader (value = "X-User-Id", required = false) String userId 
+//            ) {
+//		
+//        if (request == null) {
+//            request = new VehicleFilterRequest();
+//        }
+//        System.out.println("User ID: " + userId);
+//        String user = Objects.requireNonNullElse(userId, "ANONYMOUS");
+//
+//        PaginationResponse<VehicleResponse> response = vehicleService.getVehiclesList(request, page, size, user);
+//
+//        return ResponseEntity.ok(new ApiResponse<>("Vehicles fetched successfully", response));
+//    }
 	
 	@GetMapping("/vehicles")
     public ResponseEntity<ApiResponse<?>> getVehicles(
             @RequestBody(required = false) VehicleFilterRequest request,
             @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size
-            , @RequestHeader (value = "X-User-Id", required = false) String userId 
+            @RequestParam(defaultValue = "10") Integer size, 
+            @RequestHeader (value = "X-User-Id") String userId 
             ) {
 		
         if (request == null) {
             request = new VehicleFilterRequest();
         }
 
-        PaginationResponse<VehicleResponse> response = vehicleService.getVehiclesList(request, page, size, userId);
+        PaginationResponse<VehicleResponse> response = vehicleService.getVehiclesListNew(request, page, size, userId);
 
         return ResponseEntity.ok(new ApiResponse<>("Vehicles fetched successfully", response));
     }

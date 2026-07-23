@@ -68,7 +68,7 @@ public class Vehicle {
     private LocalDateTime bidCloseDate;
 
     @CreationTimestamp
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
 //    @Column(name = "client_id")

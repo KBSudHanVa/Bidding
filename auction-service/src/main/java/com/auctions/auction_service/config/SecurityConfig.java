@@ -25,23 +25,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-        	.csrf(csrf -> csrf.disable())
-        	.exceptionHandling(ex -> ex
+        http.csrf(csrf -> csrf.disable()).exceptionHandling(ex -> ex
         			.authenticationEntryPoint(authenticationEntryPoint)
         			.accessDeniedHandler(accessDeniedHandler))
-        	.authorizeHttpRequests(auth -> auth
+        			.authorizeHttpRequests(auth -> auth
         			.requestMatchers(
                             "/auction/vehicle"
     					).permitAll()
         			.anyRequest()
         			.authenticated()
-                )
-        	.addFilterBefore(
+                ).addFilterBefore(
                     headerAuthenticationFilter,
                     UsernamePasswordAuthenticationFilter.class
             );
-
         return http.build();
     }
 }
