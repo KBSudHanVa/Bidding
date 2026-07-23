@@ -20,6 +20,7 @@ import com.auctions.auth_service.repository.UserRepository;
 import com.auctions.auth_service.specification.UserSpecification;
 import com.auctions.auth_service.util.JwtUtil;
 import com.auctions.auth_service.dto.ResetPasswordRequest;
+import com.auctions.auth_service.dto.UpdateUserRole;
 
 import lombok.RequiredArgsConstructor;
 
@@ -173,6 +174,22 @@ public class AuthService {
     	userRepository.save(user);
     	
     	return "User status updated successfully";
+    }
+    
+    public String updateUserRole(String userId, UpdateUserRole request) {
+    	User user = userRepository
+    					.findByUserId(userId)
+    					.orElseThrow(() -> new RuntimeException("User not found.."));
+    	
+    	try {
+            Role role = Role.valueOf(request.role().toUpperCase());
+            user.setRole(role.name());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid role. Allowed roles: BUYER, SELLER, BUYER_SELLER");
+        }
+    	
+    	userRepository.save(user);
+    	return "User role updated successfully";
     }
     
     public PaginationResponse<UserResponse> getUsersList(UserFilterRequest request, Integer page, Integer size) {

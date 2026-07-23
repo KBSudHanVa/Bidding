@@ -81,6 +81,19 @@ public class AuthController {
 		}
     }
     
+    @PatchMapping("/{userId}/update-role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<?>> updateUserRole(@PathVariable String userId, @RequestBody UpdateUserRole request){
+		try {
+//			request.userId(userId);
+//			request = new UpdateUserRole(userId, request.role());
+			String response = authService.updateUserRole(userId, request);
+			return ResponseEntity.ok(new ApiResponse<>(response, null));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage(), null));
+		}
+    }
+    
     
     @PostMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
