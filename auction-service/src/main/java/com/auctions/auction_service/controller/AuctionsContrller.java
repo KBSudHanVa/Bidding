@@ -42,7 +42,7 @@ public class AuctionsContrller {
     }
 	
 	@PostMapping("/vehicle")
-    @PreAuthorize("hasAnyRole('ADMIN','SELLER')")
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER', 'BUYER_SELLER')")
     public ResponseEntity<ApiResponse<?>> createVehicle(@RequestBody CreateVehicleRequest request,
     		@RequestHeader("X-User-Id") String userId) {
 

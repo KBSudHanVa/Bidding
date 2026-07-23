@@ -11,6 +11,9 @@ import com.auctions.auction_service.specification.VehicleSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,12 @@ public class VehicleService {
 	private final VehicleRepository vehicleRepository;
 
 	private final UserRepository userRepository;
+	
+//	public enum allowedRole {
+//		ADMIN,
+//	    SELLER,
+//	    BUYER_SELLER
+//	}
 
 	// =====================================================
 	// CREATE VEHICLE
@@ -32,9 +41,14 @@ public class VehicleService {
 		User loggedInUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
 		User clientUser;
+		
+//		Set<String> allowedRoles = Set.of("SELLER", "BUYER_SELLER");
+//		allowedRole role = allowedRole.valueOf(loggedInUser.getRole().toUpperCase());
 
 		// SELLER
-		if (loggedInUser.getRole().equalsIgnoreCase("SELLER")) {
+		if (loggedInUser.getRole().equalsIgnoreCase("SELLER") || loggedInUser.getRole().equalsIgnoreCase("BUYER_SELLER")) {
+//		if( allowedRoles.contains(loggedInUser.getRole()) ) {
+//		if (role == allowedRole.SELLER || role == allowedRole.BUYER_SELLER) {
 			clientUser = loggedInUser;
 		} else if (loggedInUser.getRole().equalsIgnoreCase("ADMIN")) {  //ADMIN
 			if (request.getClientId() == null || request.getClientId().isBlank()) {
@@ -44,7 +58,9 @@ public class VehicleService {
 				if (!clientUser.getIsActive()) {
 					throw new RuntimeException("Client is inactive");
 				}
-				if (!clientUser.getRole().equalsIgnoreCase("SELLER")) {
+				if (!clientUser.getRole().equalsIgnoreCase("SELLER") && !clientUser.getRole().equalsIgnoreCase("BUYER_SELLER")) {
+//				if(!allowedRoles.contains(loggedInUser.getRole())) {
+//				if (role != allowedRole.SELLER && role != allowedRole.BUYER_SELLER) {
 					throw new RuntimeException("Client has no access to add vehicle");
 				}
 			}
