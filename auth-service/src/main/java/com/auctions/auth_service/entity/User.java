@@ -45,6 +45,10 @@ public class User {
     @Column(name = "is_active")
     private boolean isActive;
     
+    @CreationTimestamp
+    @Column(name = "modified_on")
+    private LocalDateTime modifiedOn;
+    
     @PrePersist
     public void generateId() {
 

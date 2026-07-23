@@ -1,5 +1,7 @@
 package com.auctions.auth_service.service;
 
+import java.util.Date;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -171,6 +173,7 @@ public class AuthService {
     							);
     	
     	user.setActive(request.getIsActive());
+    	user.setModifiedOn(new Date().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
     	userRepository.save(user);
     	
     	return "User status updated successfully";
@@ -184,6 +187,7 @@ public class AuthService {
     	try {
             Role role = Role.valueOf(request.role().toUpperCase());
             user.setRole(role.name());
+        	user.setModifiedOn(new Date().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid role. Allowed roles: BUYER, SELLER, BUYER_SELLER");
         }
@@ -236,6 +240,7 @@ public class AuthService {
                 );
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    	user.setModifiedOn(new Date().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
         userRepository.save(user);
         return "Force password reset successfully";
     }
