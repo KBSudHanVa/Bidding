@@ -1,5 +1,7 @@
 package com.auctions.auction_service.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.auctions.auction_service.dto.CreateVehicleRequest;
 import com.auctions.auction_service.dto.PaginationResponse;
+import com.auctions.auction_service.dto.SellerDecisionRequest;
+import com.auctions.auction_service.dto.UpdateVehicleStatusRequest;
 import com.auctions.auction_service.dto.VehicleFilterRequest;
 import com.auctions.auction_service.dto.VehicleResponse;
 import com.auctions.auction_service.entity.User;
@@ -337,4 +341,119 @@ public class VehicleService {
 //
 //		return builder.build();
 //	}
+	
+	
+	
+	
+	
+//	workflow
+	
+	@Transactional
+	public String updateStatus(Integer lotNo, UpdateVehicleStatusRequest request) {
+
+	    Vehicle vehicle = vehicleRepository.findById(lotNo)
+	            .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+	    VehicleStatus current = vehicle.getStatus();
+	    VehicleStatus next = request.status();
+
+	    validateTransition(current, next);
+
+	    if (next == VehicleStatus.LIVE) {
+
+	        if (request.bidCloseDate() == null) {
+	            throw new RuntimeException("Bid close date is required");
+	        }
+
+	        if (request.bidCloseDate().isBefore(LocalDateTime.now())) {
+	            throw new RuntimeException("Bid close date must be in the future");
+	        }
+
+	        vehicle.setBidCloseDate(request.bidCloseDate());
+	    }
+
+	    vehicle.setStatus(next);
+        vehicle.setModifiedOn(LocalDateTime.now());
+
+	    vehicleRepository.save(vehicle);
+
+	    return "Vehicle moved to " + next;
+	}
+	
+	
+	private void validateTransition(VehicleStatus current,
+            VehicleStatus next) {
+		
+		switch (current) {
+		
+		case DRAFT -> {
+			if (next != VehicleStatus.OPEN)
+			throw new RuntimeException("Only OPEN is allowed.");
+		}
+		case OPEN -> {
+			if (next != VehicleStatus.LIVE)
+			throw new RuntimeException("Only LIVE is allowed.");
+		}
+		case LIVE -> {
+			throw new RuntimeException("LIVE can only be closed by scheduler.");
+		}
+		case CLOSED -> {
+			if (next != VehicleStatus.SOLD && next != VehicleStatus.CANCELLED)
+			throw new RuntimeException("Only SOLD or CANCELLED allowed.");
+		}
+		case SOLD ->
+			throw new RuntimeException("Vehicle already SOLD.");
+		case CANCELLED ->
+			throw new RuntimeException("Vehicle already CANCELLED.");
+		}
+	}
+	
+	@Transactional
+	public String sellerDecision(Integer lotNo, SellerDecisionRequest request, String userId) {
+
+	    Vehicle vehicle = vehicleRepository.findById(lotNo)
+	            .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+	    
+//	    
+//	    if( !vehicle.getClientId().equals(userId) ) {
+//	    	throw new RuntimeException("Only vehicle seller can approve");
+//	    }
+	    
+//	    if(vehicle.getClientId().toString().equalsIgnoreCase(userId)) {
+//	    	throw new RuntimeException("Only vehicle seller can approve");
+//	    }
+	    
+	    if(!vehicle.getClientId().getUserId().toString().equalsIgnoreCase(userId)) {
+	    	System.out.println(vehicle.getClientId().getUserId().toString());
+		    System.out.println(userId);
+	    	throw new RuntimeException("Only vehicle seller can approve");
+	    }
+
+	    if (vehicle.getStatus().equals(VehicleStatus.SOLD)) {
+	        throw new RuntimeException("Vehicle is sold");
+	    } else if (vehicle.getStatus().equals(VehicleStatus.CANCELLED)) {
+	        throw new RuntimeException("Vehicle is cancelled");
+	    } else if (vehicle.getStatus() != VehicleStatus.CLOSED) {
+	        throw new RuntimeException("Auction is not closed");
+	    }  
+
+	    if (request.approve()) {
+	        vehicle.setStatus(VehicleStatus.SOLD);
+	    } else {
+	        vehicle.setStatus(VehicleStatus.CANCELLED);
+	    }
+
+        vehicle.setModifiedOn(LocalDateTime.now());
+	    vehicleRepository.save(vehicle);
+
+	    return "Vehicle updated successfully";
+	}
+	
+	
+//	workflow
+	
+	
+	
+	
+	
 }

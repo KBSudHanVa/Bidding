@@ -5,6 +5,8 @@ import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.auctions.auction_service.dto.ApiResponse;
 import com.auctions.auction_service.dto.CreateVehicleRequest;
 import com.auctions.auction_service.dto.PaginationResponse;
+import com.auctions.auction_service.dto.SellerDecisionRequest;
+import com.auctions.auction_service.dto.UpdateVehicleStatusRequest;
 import com.auctions.auction_service.dto.VehicleFilterRequest;
 import com.auctions.auction_service.dto.VehicleResponse;
 import com.auctions.auction_service.service.VehicleService;
@@ -51,6 +55,25 @@ public class AuctionsContrller {
         VehicleResponse response = vehicleService.createVehicle(request, userId);
         return ResponseEntity.ok(new ApiResponse<>("Vehicle created successfully", response));
     }
+	
+	@PatchMapping("/{lotNo}/status")
+	@PreAuthorize("hasAnyRole('ADMIN','SELLER', 'BUYER_SELLER')")
+	public ResponseEntity<ApiResponse<?>> updateStatus(@PathVariable Integer lotNo, @RequestBody UpdateVehicleStatusRequest request){
+		return ResponseEntity.ok(
+	            new ApiResponse<>(vehicleService.updateStatus(lotNo, request), null));
+	}
+	
+	@PatchMapping("/{lotNo}/approve")
+	@PreAuthorize("hasAnyRole('ADMIN','SELLER', 'BUYER_SELLER')")
+	public ResponseEntity<ApiResponse<?>> sellerDecision(@PathVariable Integer lotNo, 
+			@RequestBody SellerDecisionRequest request,
+			@RequestHeader("X-User-Id") String userId){
+		System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+		return ResponseEntity.ok(
+	            new ApiResponse<>(vehicleService.sellerDecision(lotNo, request, userId), null));
+	}
+	
+	
 	
 //	@GetMapping("/vehicle")
 //    public ResponseEntity<ApiResponse<?>> getVehicle(
