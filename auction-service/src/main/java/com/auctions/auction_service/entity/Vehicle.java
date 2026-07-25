@@ -70,6 +70,10 @@ public class Vehicle {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+    
+    @CreationTimestamp
+    @Column(name = "modified_on")
+    private LocalDateTime modifiedOn;
 
 //    @Column(name = "client_id")
     @ManyToOne(fetch = FetchType.LAZY)

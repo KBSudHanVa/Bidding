@@ -1,6 +1,16 @@
 package com.auctions.auction_service.service;
 
-import com.auctions.auction_service.dto.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import com.auctions.auction_service.dto.CreateVehicleRequest;
+import com.auctions.auction_service.dto.PaginationResponse;
+import com.auctions.auction_service.dto.VehicleFilterRequest;
+import com.auctions.auction_service.dto.VehicleResponse;
 import com.auctions.auction_service.entity.User;
 import com.auctions.auction_service.entity.Vehicle;
 import com.auctions.auction_service.enums.VehicleStatus;
@@ -10,13 +20,6 @@ import com.auctions.auction_service.specification.VehicleSpecification;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
